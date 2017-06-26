@@ -6,6 +6,7 @@ require 'securerandom'
 require 'time'
 
 INDEX = 'tagging-events'
+AWS_SERVICE = 'search-govuk-tagging-experiment-sl2zmv5puyjarpygspqdsa33n4.eu-west-2.es.amazonaws.com'
 
 class Hash
   def slice(*keys)
@@ -17,7 +18,7 @@ end
 transport = Elasticsearch::Transport::Transport::HTTP::Faraday.new(
   hosts: [{
     scheme: 'https',
-    host: "search-govuk-tagging-experiment-sl2zmv5puyjarpygspqdsa33n4.eu-west-2.es.amazonaws.com",
+    host: AWS_SERVICE,
     port: '443',
   }]
 )
@@ -82,7 +83,7 @@ users = JSON.parse(File.read('users.json'))
 
 rows = []
 
-CSV.foreach('all-of-it.csv', headers: true) do |row|
+CSV.foreach('events.csv', headers: true) do |row|
   rows << row
 end
 

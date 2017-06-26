@@ -2,32 +2,30 @@
 
 The results of a spike into using Kibana for tagging analytics
 
-Run on content store:
+## What we did
+
+First, you'll need a AWS elasticsearch service:
+
+<https://aws.amazon.com/elasticsearch-service/>
+
+Replace the `AWS_SERVICE` constant in `send-to-aws.rb`.
+
+Then generate a CSV (`events.json`) with events from the publishing-api:
+
+<https://github.com/alphagov/publishing-api/pull/944>
+
+Then generate the `users.json` with this incantation in signon:
 
 ```ruby
-ContentItem.each do |content_item|
-  api_url_method = lambda { |base_path| "http://api.example.com/content/#{base_path}" }
-
-  presented = ContentItemPresenter.new(content_item, api_url_method).as_json
-
-  File.write("/tmp/items/#{content_item["content_id"]}.json", presented.to_json)
-end
+File.write(
+  "users.json",
+  JSON.dump(
+    User.includes(:organisation).map { |u| { user_uid: u.uid, name: u.name, organisation: u.organisation.try(:name) } }
+  )
+)
 ```
 
-Zip it up:
-
-```
-cd /tmp
-tar -zcvf content-items.tar.gz items
-```
-
-Download the file:
-
-```
-scp content-store-1.staging:/tmp/content-items.tar.gz .
-```
-
-Send to AWS:
+Then send the data to AWS:
 
 ```
 ruby send-to-s3.rb
